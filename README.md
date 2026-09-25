@@ -1,40 +1,59 @@
-# ab-test-significance — calculadora grátis e de código aberto de significância de teste A/B
+**English** · [Português (Brasil)](README.pt-BR.md)
 
-`ab-test-significance` é uma calculadora gratuita e de código aberto de
-significância estatística de um teste A/B de duas proporções (teste z),
-com p-valor, intervalo de confiança da diferença e o aviso de amostra
-insuficiente — pensada para quem testa página de serviço com tráfego
-baixo, onde "deu 3 conversões a mais" não quer dizer nada sozinho.
+# ab-test-significance
 
-## O problema que ela resolve
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)
 
-Site de prestador de serviço raramente tem o volume de tráfego de um
-e-commerce grande. Com poucas centenas de visitantes por variante, uma
-diferença de conversão que parece grande pode não passar de ruído
-estatístico. `ab-test-significance` calcula se a diferença observada é
-estatisticamente significativa e, principalmente, avisa quando a amostra
-atual é pequena demais para confiar no resultado — o erro mais comum de
-quem interpreta teste A/B de olho.
+`ab-test-significance` is a free, open source calculator for the
+statistical significance of a two-proportion A/B test (z-test). It reports
+the p-value, the confidence interval of the difference and a warning when
+the sample is too small. It is built for people testing service pages with
+low traffic, where "3 more conversions" means nothing on its own. It runs
+locally with the Python standard library only.
 
-## Como usar, passo a passo
+## Contents
 
-**1. Instale.** Só biblioteca padrão do Python (3.9 ou mais recente, usa
-`math`), sem dependência externa — não precisa de `scipy`:
+- [Background](#background)
+- [Installation](#installation)
+- [Usage](#usage)
+- [FAQ](#faq)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
+- [Author](#author)
+- [License](#license)
+
+## Background
+
+Service provider websites rarely get the traffic of a large e-commerce
+store. With a few hundred visitors per variant, a conversion difference
+that looks large can be nothing more than statistical noise.
+`ab-test-significance` calculates whether the observed difference is
+statistically significant and, above all, warns you when the current
+sample is too small to trust the result. That is the most common mistake
+when people read an A/B test by eye.
+
+## Installation
+
+Python 3.9 or newer, standard library only (it uses `math`). No external
+dependencies, `scipy` is not needed.
 
 ```bash
-git clone https://github.com/lucasferrazseo/ab-test-significance.git
+git clone https://github.com/LucasFerrazSEO/ab-test-significance.git
 cd ab-test-significance
 ```
 
-**2. Rode com os números do seu teste**, visitantes e conversões de cada
-variante:
+## Usage
+
+**1. Run it with your test numbers**, visitors and conversions for each
+variant:
 
 ```bash
 python ab_test_significance.py --controle-visitantes 1000 --controle-conversoes 40 \
                                  --teste-visitantes 1000 --teste-conversoes 65
 ```
 
-**3. Leia o resultado.** Exemplo real de saída:
+**2. Read the result.** Real output sample. The tool prints its report in
+Brazilian Portuguese.
 
 ```
 === ab-test-significance ===
@@ -48,54 +67,59 @@ Resultado: ESTATISTICAMENTE SIGNIFICATIVO ao nível de 0.05
 
 Amostra mínima recomendada por variante para detectar esta diferença com 80% de poder: ~1250 visitante(s)
 ATENÇÃO: a amostra atual está abaixo da mínima recomendada — o resultado pode ser ruído, mesmo que pareça significativo.
+
+(Teste z de proporções, aproximação normal. Não corrige para múltiplas comparações nem para checagem repetida do resultado durante o teste.)
 ```
 
-Repare: mesmo com resultado "estatisticamente significativo" ao nível de
-5%, a ferramenta avisou que a amostra está abaixo da mínima recomendada
-para aquele tamanho de efeito — os dois números juntos é que dão o
-diagnóstico completo, não um sozinho.
+Note that even with a result that is "statistically significant" at the
+5% level, the tool warns that the sample is below the recommended minimum
+for that effect size. The two numbers together give the full diagnosis,
+not either one alone.
 
-**4. Ajuste o nível de significância**, se seu critério não for o padrão
-de 5%:
+**3. Change the significance level** if your threshold is not the default
+5%:
 
 ```bash
 python ab_test_significance.py --controle-visitantes 200 --controle-conversoes 8 \
                                  --teste-visitantes 210 --teste-conversoes 12 --alfa 0.10
 ```
 
-## Perguntas frequentes
+## FAQ
 
-**ab-test-significance é realmente grátis?**
-Sim, código aberto sob licença MIT.
+**Is ab-test-significance really free?**
+Yes. It is open source under the MIT license.
 
-**O que significa "estatisticamente significativo"?**
-Significa que a diferença observada é improvável de ter surgido só por
-acaso, ao nível de confiança escolhido. Não significa necessariamente que
-o efeito é grande ou que vale a pena — combine com o intervalo de
-confiança e o contexto de negócio antes de decidir.
+**What does "statistically significant" mean?**
+It means the observed difference is unlikely to have happened by chance
+alone, at the chosen confidence level. It does not necessarily mean the
+effect is large or worth acting on. Combine it with the confidence
+interval and the business context before you decide.
 
-**Posso ficar checando o resultado todo dia até dar significativo?**
-Não é recomendado — ver Limitações abaixo. "Peeking" (checar repetidas
-vezes antes do fim do teste planejado) infla a chance de falso positivo,
-mesmo que cada checagem individual pareça correta.
+**Can I check the result every day until it becomes significant?**
+It is not recommended (see Limitations below). "Peeking", checking
+repeatedly before the planned end of the test, inflates the chance of a
+false positive, even if each individual check looks correct.
 
-**Preciso de scipy ou outra biblioteca de estatística?**
-Não. A ferramenta implementa o teste z e a função de distribuição normal
-usando só o módulo `math` da biblioteca padrão.
+**Do I need scipy or another statistics library?**
+No. The tool implements the z-test and the normal distribution function
+using only the `math` module from the standard library.
 
-## Limitações
+## Limitations
 
-O teste z de proporções é uma aproximação (assume distribuição
-aproximadamente normal); com amostra muito pequena ou taxa de conversão
-muito próxima de 0% ou 100%, um teste exato (Fisher) é mais correto. Não
-corrige para múltiplas comparações — testar várias métricas ao mesmo
-tempo aumenta a chance de falso positivo — nem para "peeking".
+The two-proportion z-test is an approximation (it assumes a roughly normal
+distribution). With a very small sample, or a conversion rate very close
+to 0% or 100%, an exact test (Fisher) is more accurate. It does not
+correct for multiple comparisons (testing several metrics at once raises
+the chance of a false positive) or for peeking.
 
-## Autor
+## Contributing
 
-[Lucas Ferraz](https://lucasferraz.com) — especialista em SEO, criação de
-sites e SEO para IA, fundador da [Lucas Ferraz SEO](https://lucasferrazseo.com).
+Bug reports and suggestions are welcome through [GitHub Issues](https://github.com/LucasFerrazSEO/ab-test-significance/issues).
 
-## Licença
+## Author
 
-MIT — ver [LICENSE](LICENSE).
+[Lucas Ferraz](https://lucasferraz.com) is an SEO, website development and Generative Engine Optimization specialist and the founder of [Lucas Ferraz SEO](https://lucasferrazseo.com).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
